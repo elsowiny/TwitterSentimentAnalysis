@@ -33,3 +33,5 @@ then run the display.py application to run the display of the app in Dash.
 - Fixed UI w/ DashBootstramp components
 - Added coloring depending on sentiment
 - Removed DB to start fresh (GitHub will not store that large file)
+
+## Migrating to SQL for hosting

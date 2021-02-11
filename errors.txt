@@ -1,0 +1,10 @@
+name 'connection' is not defined
+name 'connection' is not defined
+name 'connection' is not defined
+Execution failed on sql 'SELECT * FROM sentiment ORDER BY id DESC, unix DESC LIMIT 10000': 1046 (3D000): No database selected
+Execution failed on sql 'SELECT * FROM sentiment ORDER BY id DESC, unix DESC LIMIT 10000': 1046 (3D000): No database selected
+Execution failed on sql 'SELECT * FROM sentiment ORDER BY id DESC, unix DESC LIMIT 10000': 1046 (3D000): No database selected
+Execution failed on sql 'SELECT * FROM sentiment ORDER BY id DESC, unix DESC LIMIT 10000': 1046 (3D000): No database selected
+Execution failed on sql 'SELECT * FROM sentiment ORDER BY id DESC, unix DESC LIMIT 10000': 1046 (3D000): No database selected
+Execution failed on sql 'SELECT * FROM sentiment ORDER BY id DESC, unix DESC LIMIT 10000': 1046 (3D000): No database selected
+Execution failed on sql 'SELECT * FROM sentiment ORDER BY id DESC, unix DESC LIMIT 10000': 1046 (3D000): No database selected
