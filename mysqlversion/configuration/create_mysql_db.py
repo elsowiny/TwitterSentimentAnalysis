@@ -9,7 +9,7 @@ try:
             password=config('password'),
            # database=config('database'),
         )
-    print(cnx)
+    #print(cnx)
     print("connection successful")
 except Error as e:
     print(e)
@@ -18,8 +18,11 @@ except Error as e:
 c = cnx.cursor()
 
 def create_db():
-    c.execute("CREATE DATABASE IF NOT EXISTS twitterDB")
-    cnx.commit()
-    print("DB created")
+    try:
+        c.execute("CREATE DATABASE IF NOT EXISTS twitterDB")
+        cnx.commit()
+        print("DB created")
+    except Error as e:
+        print(e)
 
 create_db()

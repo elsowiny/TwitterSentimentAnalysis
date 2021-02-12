@@ -1,5 +1,4 @@
 import time
-
 import regex as re
 import string
 from tweepy import Stream
@@ -18,15 +17,14 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from settings.config import stop_words
 
-
 ## CONNECT TO SQL
 try:
     connection = connect(
-            host=config('host'),
-            user=config('user'),
-            password=config('password'),
-           # database=config('database'),
-        )
+        host=config('host'),
+        user=config('user'),
+        password=config('password'),
+        database=config('database'),
+    )
     print(connection)
     print("connection successful")
 except Error as e:
@@ -34,16 +32,6 @@ except Error as e:
     exit(1)
 
 c = connection.cursor()
-
-def create_db():
-    c.execute("CREATE DATABASE IF NOT EXISTS twitterDB")
-    connection.commit()
-
-def test1(): #no error method
-    cn = connection
-    cur = cn.cursor()
-    cur.execute("select version;")
-    print(cur.fetchone())
 
 analyzer = SentimentIntensityAnalyzer()
 
@@ -56,26 +44,21 @@ asecret = config('ACCESSTOKENSECRET')
 
 def create_table():
     try:
-
-        # allows concurrent write and reads
-       # c.execute("PRAGMA journal_mode=wal")
-       # c.execute("PRAGMA wal_checkpoint=TRUNCATE")
-
         c.execute(
             "CREATE TABLE IF NOT EXISTS sentiment(id INTEGER PRIMARY KEY AUTO_INCREMENT, "
             "unix INTEGER, tweet TEXT, sentiment REAL)")
         # key-value table for random stuff
-        c.execute("CREATE TABLE IF NOT EXISTS misc(key TEXT PRIMARY KEY, value TEXT)")
+        #   c.execute("CREATE TABLE IF NOT EXISTS misc(key TEXT PRIMARY KEY, value TEXT)")
 
-        c.execute(
-            "CREATE VIRTUAL TABLE sentiment_fts USING "
-            "fts5(tweet, content=sentiment, content_rowid=id, prefix=1, prefix=2, prefix=3)")
+        #   c.execute(
+        #      "CREATE VIRTUAL TABLE sentiment_fts USING "
+        #      "fts5(tweet, content=sentiment, content_rowid=id, prefix=1, prefix=2, prefix=3)")
 
-        c.execute("""
-            CREATE TRIGGER sentiment_insert AFTER INSERT ON sentiment BEGIN
-                INSERT INTO sentiment_fts(rowid, tweet) VALUES (new.id, new.tweet);
-            END
-        """)
+        #   c.execute("""
+        #       CREATE TRIGGER sentiment_insert AFTER INSERT ON sentiment BEGIN
+        #           INSERT INTO sentiment_fts(rowid, tweet) VALUES (new.id, new.tweet);
+        #       END
+        #   """)
         connection.commit()
     except Exception as e:
         print(str(e))
@@ -88,7 +71,7 @@ lock = Lock()
 
 
 class listener(StreamListener):
-    data = []
+    dataList = []
     lock = None
 
     def __init__(self, lock):
@@ -109,37 +92,49 @@ class listener(StreamListener):
 
         # with lock, if there's data, save in transaction using one bulk query
         with self.lock:
-            if len(self.data):
-                #c.execute('BEGIN TRANSACTION')
+            if len(self.dataList):
                 try:
-                    c.executemany("INSERT INTO sentiment (unix, tweet, sentiment) VALUES (?, ?, ?)", self.data)
-                except:
+                    # c.executemany("INSERT INTO sentiment (unix, tweet, sentiment) VALUES (?, ?, ?)", (self.data))
+                    c.executemany("INSERT INTO sentiment (unix, tweet, sentiment) VALUES (?, ?, ?)",
+                                  self.dataList)
+
+                    connection.commit()
+                    print("Inserted")
+                except Error as e:
+                    print("Did not insert because", str(e))
+                    #print(self.data)
                     pass
-                connection.commit()
 
                 self.data = []
 
     def on_data(self, data):
         try:
-            data = json.loads(data)
-            if 'truncated' not in data:
-                # print(data)
-                return True
-            if data['truncated']:
-                tweet = unidecode(data['extended_tweet']['full_text'])
+            # Data loaded in from twitter
+            twitter_data = json.loads(data)
+
+            # https://docs.tweepy.org/en/latest/extended_tweets.html
+
+            #print(twitter_data)
+
+            # Collecting the tweet
+            if twitter_data['truncated']:  # If the tweet is long we capture it
+                tweet = unidecode(twitter_data['extended_tweet']['full_text'])
+                print(twitter_data['extended_tweet']['full_text'])
             else:
-                tweet = unidecode(data['text'])
-            time_ms = data['timestamp_ms']
+                tweet = unidecode(twitter_data['text'])
+            time_ms = twitter_data['timestamp_ms']
             vs = analyzer.polarity_scores(tweet)
             sentiment = vs['compound']
-            #print(time_ms, tweet, sentiment)
+            print(time_ms, tweet, sentiment)
+
 
             # append to data list (to be saved every 1 second)
             with self.lock:
-                self.data.append((time_ms, tweet, sentiment))
+                self.dataList.append((time_ms, tweet, sentiment))
+                #print(self.data)
+                print("data recieved")
 
         except KeyError as e:
-
             print(str(e))
         return True
 
