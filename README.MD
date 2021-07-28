@@ -23,10 +23,10 @@ start by running the twitter_stream2.py application after settings your correspo
 env variables for twitter. After, the application will stream tweets and store into a sqlite3 db,
 then run the display.py application to run the display of the app in Dash.
 
-## Tesla Sentiment Example
+# Tesla Sentiment Example
 ![Tesla Example](./imgs/tesla.png "Tesla Sentiment")
 
-## Covid Sentiment Example
+# Covid Sentiment Example
 ![Covid Example](./imgs/covid.png "Covid Sentiment")
 
 ### NOTES
